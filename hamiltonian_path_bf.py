@@ -5,7 +5,16 @@ import time
 def generate_random_graph(num_nodes, edge_prob):
     matrix = np.random.choice([0, 1], size=(num_nodes, num_nodes), p=[1 - edge_prob, edge_prob])
     np.fill_diagonal(matrix, 0)
+
+    # Ensure at least one outgoing edge per node
+    for i in range(num_nodes):
+        if np.sum(matrix[i]) == 0:
+            possible_targets = [j for j in range(num_nodes) if j != i]
+            target = np.random.choice(possible_targets)
+            matrix[i][target] = 1
+
     return matrix
+
 
 def has_hamiltonian_path(adj_matrix):
     num_nodes = len(adj_matrix)
@@ -17,8 +26,8 @@ def has_hamiltonian_path(adj_matrix):
                 valid_path = False
                 break
         if valid_path:
-            return True
-    return False
+            return True, perm
+    return False, None
 
 def get_all_hamiltonian_paths(adj_matrix):
     num_nodes = len(adj_matrix)
@@ -35,16 +44,34 @@ def get_all_hamiltonian_paths(adj_matrix):
     
     return paths
 
-# WARNING: n > 10 becomes very slow due to factorial time
-n = 8
-graph = generate_random_graph(n, 0.3)
-print("Adjacency Matrix generated.")
+# Parameters
+n = 10
+edge_prob = 0.5
+graph = generate_random_graph(n, edge_prob)
+
+# Print adjacency matrix
+print("Adjacency Matrix:")
+print(graph)
 
 # Check for existence of any Hamiltonian path
 start_time = time.time()
-result = has_hamiltonian_path(graph)
+has_path, first_path = has_hamiltonian_path(graph)
 end_time = time.time()
-print("Has Hamiltonian Path:", result)
+
+print("\nHas Hamiltonian Path:", has_path)
 print(f"Time taken: {end_time - start_time:.6f} seconds")
 
-# Find and print all Hamiltonian paths
+if has_path:
+    print("First Hamiltonian Path Found:", " -> ".join(map(str, first_path)))
+
+# Find and time all Hamiltonian paths
+all_start = time.time()
+all_paths = get_all_hamiltonian_paths(graph)
+all_end = time.time()
+
+print("\nAll Hamiltonian Paths:")
+for path in all_paths:
+    print(" -> ".join(map(str, path)))
+
+print("\nTotal Hamiltonian Paths Found:", len(all_paths))
+print(f"Time to find all paths: {all_end - all_start:.6f} seconds")
