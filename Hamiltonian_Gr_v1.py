@@ -6,52 +6,54 @@ from collections import defaultdict, deque
 def generate_random_graph(num_nodes, edge_prob):
     matrix = np.random.choice([0, 1], size=(num_nodes, num_nodes), p=[1 - edge_prob, edge_prob])
     np.fill_diagonal(matrix, 0)
+
+    # Ensure at least one outgoing edge per node
+    for i in range(num_nodes):
+        if np.sum(matrix[i]) == 0:
+            possible_targets = [j for j in range(num_nodes) if j != i]
+            target = np.random.choice(possible_targets)
+            matrix[i][target] = 1
+
     return matrix
 
 def find_hamiltonian_path(graph):
-    def dfs(node, visited, path):
-        visited[node] = True
-        path.append(node)
-
-        # Get neighbors of the current node
-        neighbors = [i for i, connected in enumerate(graph[node]) if connected and not visited[i]]
-
-        # Sort neighbors by the number of unvisited neighbors they have (descending order)
-        neighbors.sort(key=lambda x: sum(1 for i in range(len(graph)) if graph[x][i] and not visited[i]), reverse=True)
-
-        for neighbor in neighbors:
-            if dfs(neighbor, visited, path):
-                return True
-
-        # Backtrack if no Hamiltonian path is found
-        if len(path) == len(graph):
-            return True
-        visited[node] = False
-        path.pop()
-        return False
-
     n = len(graph)
-    visited = [False] * n
+    unvisted = set(range(n))
     path = []
 
-    for start_node in range(n):
-        if dfs(start_node, visited, path):
-            return path
+    in_edges = [sum(graph[j][i] for j in range(n)) for i in range(n)]
+    start = min(range(n), key=lambda x: in_edges[x])
+    print("Starting node(count in computer science index):", start)
+    curr = start
+    path.append(curr)
+    unvisted.remove(curr)
 
-    return None  # No Hamiltonian path found
+    while unvisted:
+        attached = []
+        for i in range(n):
+            if (graph[curr][i] == 1) and (i in unvisted):
 
+                unvisit_attached = sum(1 for j in range(n) if graph[i][j] == 1 and j in unvisted)
+                attached.append((i, unvisit_attached))
+
+        if not attached:
+            return path, None
+            return None
+        #choose the next node with the least number of unvisited neighbors
+        next_node = min(attached, key=lambda x: x[1])[0]
+        path.append(next_node)
+        unvisted.remove(next_node)
+        curr = next_node
+
+    return path
 # Example usage
 if __name__ == "__main__":
     # Example graph represented as an adjacency list
-    n = 4
+    n = 10
 graph = generate_random_graph(n, 0.3)
 print(graph)
-#graph = {
-#    0: [1, 2],
-#    1: [0, 2, 3],
-#    2: [0, 1,3],
-#    3: [1, 2]
-#}
+
+
 print("Adjacency Matrix generated.")
 
 start_time = time.time()
