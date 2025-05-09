@@ -82,6 +82,6 @@ print(f"Time to find all paths: {all_end - all_start:.6f} seconds")
 
 
 "In this bf Algorithm, I use Itertools to enumerate through all possible connections of edges in the given random matrix.
-"To ensure no isolated nodes, I enumerate through rows in our matrix that only contain 0's. 
-"The algo is timed finding 2 things: Finding the first path, and finding all possible Hamiltonian paths in the Graph
+To ensure no isolated nodes, I enumerate through rows in our matrix that only contain 0's. 
+The algo is timed finding 2 things: Finding the first path, and finding all possible Hamiltonian paths in the Graph"
 
