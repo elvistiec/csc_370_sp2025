@@ -21,7 +21,7 @@ def find_hamiltonian_path(graph):
     unvisted = set(range(n))
     path = []
 
-    in_edges = [sum(graph[j][i] for j in range(n)) for i in range(n)]
+    in_edges = [sum(graph[j][i] for j in range(n)) for i in range(n)] # minimize the sums of the columns to find first node
     start = min(range(n), key=lambda x: in_edges[x])
     print("Starting node(count in computer science index):", start)
     curr = start
