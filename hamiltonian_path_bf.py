@@ -61,4 +61,26 @@ end_time = time.time()
 print("\nHas Hamiltonian Path:", has_path)
 print(f"Time taken: {end_time - start_time:.6f} seconds")
 
-# Find and print all Hamiltonian paths
+if has_path:
+    print("First Hamiltonian Path Found:", " -> ".join(map(str, first_path)))
+
+# Find and time all Hamiltonian paths
+all_start = time.time()
+all_paths = get_all_hamiltonian_paths(graph)
+all_end = time.time()
+
+print("\nAll Hamiltonian Paths:")
+for path in all_paths:
+    print(" -> ".join(map(str, path)))
+
+print("\nTotal Hamiltonian Paths Found:", len(all_paths))
+print(f"Time to find all paths: {all_end - all_start:.6f} seconds")
+
+
+
+
+
+
+"In this bf Algorithm, I use Itertools to enumerate through all possible connections of edges in the given random matrix.
+To ensure no isolated nodes, I enumerate through rows in our matrix that only contain 0's. 
+The algo is timed finding 2 things: Finding the first path, and finding all possible Hamiltonian paths in the Graph"
