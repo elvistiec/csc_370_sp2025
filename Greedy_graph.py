@@ -27,14 +27,11 @@ def find_hamiltonian_path_greedy(graph):
     curr = start
     path.append(curr)
     unvisited.remove(curr)
-    count = 0
+
     while unvisited:
-        
         attached = []
         for i in range(n):
             if graph[curr][i] == 1 and i in unvisited:
-                count +=1
-                
                 unvisited_attached = sum(1 for j in range(n) if graph[i][j] == 1 and j in unvisited)
                 attached.append((i, unvisited_attached))
 
@@ -45,62 +42,50 @@ def find_hamiltonian_path_greedy(graph):
         path.append(next_node)
         unvisited.remove(next_node)
         curr = next_node
-        #print(count)    
+
     return path
 
-def has_hamiltonian_path_bruteforce(adj_matrix):
-    num_nodes = len(adj_matrix)
-    for perm in itertools.permutations(range(num_nodes)):
-        if all(adj_matrix[perm[i]][perm[i + 1]] == 1 for i in range(num_nodes - 1)):
-            return True, perm
-    return False, None
-
 # test runs
-max_seconds = 1 # timeout at 10 minutes
+max_seconds = 2
 edge_prob = 0.5
-n = 2 # start at 2 nodes
+n = 2
 node_counts = []
 greedy_times = []
-brute_times = []
+retry_counts = []
 
 # export results file
 with open("results.txt", "w") as f:
-    
-    f.write("node_number\tgreedy_time\tbrute_time\tgreedy_path\tbrute_path\n")
+    f.write("node_number\tgreedy_time\tretry_count\tgreedy_path\n")
 
     while True:
         print(f"\n{n} nodes")
-        graph = generate_random_graph(n, edge_prob)
 
-        # greedy tests
+        retry_count = 1
+        greedy_path = None
         start_greedy = time.time()
-        greedy_path = find_hamiltonian_path_greedy(graph)
+
+        while greedy_path is None:
+            graph = generate_random_graph(n, edge_prob)
+            greedy_path = find_hamiltonian_path_greedy(graph)
+            if greedy_path is None:
+                retry_count += 1
+
         end_greedy = time.time()
         greedy_time = end_greedy - start_greedy
-        greedy_success = "yes" if greedy_path else "no"
 
-        # brute force tests
-        #start_bf = time.time()
-        #has_path_bf, bf_path = has_hamiltonian_path_bruteforce(graph)
-        #end_bf = time.time()
-        #bf_time = end_bf - start_bf
-        #bf_success = "yes" if has_path_bf else "no"
-
-        print(f"greedy: {greedy_success} in {greedy_time:.6f}s")
-       # print(f"bruteforce: {bf_success} in {bf_time:.6f}s")
+        print(f"greedy: success in {greedy_time:.6f}s after {retry_count} attempt(s)")
 
         node_counts.append(n)
         greedy_times.append(greedy_time)
-        #brute_times.append(bf_time)
-        no = "no"
+        retry_counts.append(retry_count)
 
         # save to file
-        f.write(f"{n}\t{greedy_time:.6f}\t{0}\t{greedy_success}\t{no}\n")
+        f.write(f"{n}\t{greedy_time:.6f}\t{retry_count}\tyes\n")
         f.flush()
 
-        # timeout
-        if greedy_time > max_seconds:
-            print(f"bruteforce exceeded {max_seconds} seconds at n={n}.")
+        # break only if slow on first try
+        if greedy_time > max_seconds and retry_count == 1:
+            print(f"Terminated: greedy_time > {max_seconds} on first attempt (n={n})")
             break
 
         n += 1
@@ -108,7 +93,6 @@ with open("results.txt", "w") as f:
 # plot results
 plt.figure(figsize=(10, 6))
 plt.plot(node_counts, greedy_times, label='Greedy', marker='o')
-#plt.plot(node_counts, brute_times, label='Bruteforce', marker='x')
 plt.xlabel('Number of Nodes')
 plt.ylabel('Time (seconds)')
 plt.title('Greedy Hamiltonian Path')
